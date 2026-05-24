@@ -3,7 +3,7 @@ Describe a DFA in natural language and visualize it as an interactive graph. Ste
 ## Setup
 ```bash
 npm install
-cp .env.example .env   # add your Groq API key
+cp .env.example .encv enter Api details
 npm run dev
 ```
 ## Deploy on Vercel
