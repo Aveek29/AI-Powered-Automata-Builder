@@ -9,6 +9,8 @@ export default function Simulator({ automata, onStateChange }) {
   const [finished, setFinished] = useState(false);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(500);
+  const [flashState, setFlashState] = useState(null);
+  const [readingChar, setReadingChar] = useState(null);
   const speedRef = useRef(speed);
   const finishedRef = useRef(finished);
   const intervalRef = useRef(null);
@@ -32,6 +34,8 @@ export default function Simulator({ automata, onStateChange }) {
     setPaused(false);
     initializedRef.current = false;
     onStateChangeRef.current?.(null);
+    setFlashState(null);
+    setReadingChar(null);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -61,6 +65,8 @@ export default function Simulator({ automata, onStateChange }) {
     setFinished(false);
     initializedRef.current = false;
     onStateChangeRef.current?.(null);
+    setFlashState(null);
+    setReadingChar(null);
   };
 
   const doStep = useCallback(() => {
@@ -75,8 +81,10 @@ export default function Simulator({ automata, onStateChange }) {
       stateRef.current = start;
       stepRef.current = -1;
       setCurrentState(start);
+      setFlashState(start);
       onStateChangeRef.current?.(start);
       setCurrentStep(-1);
+      setTimeout(() => setFlashState(null), 400);
       setSimLog([{
         step: 0,
         state: start,
@@ -112,6 +120,10 @@ export default function Simulator({ automata, onStateChange }) {
     }
 
     const char = inputString[nextStep];
+
+    setReadingChar(char);
+    setTimeout(() => setReadingChar(null), 250);
+
     const transition = getTransition(curState, char);
 
     if (transition) {
@@ -119,8 +131,10 @@ export default function Simulator({ automata, onStateChange }) {
       stateRef.current = newState;
       stepRef.current = nextStep;
       setCurrentState(newState);
+      setFlashState(newState);
       onStateChangeRef.current?.(newState);
       setCurrentStep(nextStep);
+      setTimeout(() => setFlashState(null), 400);
       setSimLog((prev) => [
         ...prev,
         {
@@ -154,6 +168,7 @@ export default function Simulator({ automata, onStateChange }) {
         return false;
       }
     } else {
+      setReadingChar(null);
       setSimLog((prev) => [
         ...prev,
         {
@@ -455,16 +470,27 @@ export default function Simulator({ automata, onStateChange }) {
       <div className="flex items-center gap-3 mb-3 text-sm">
         <span className="text-gray-500 dark:text-gray-400">Current state:</span>
         <span
+          key={currentState + (flashState ? "-flash" : "")}
           className={`font-bold text-lg font-mono transition-all duration-300 ${
             isAccepted
               ? "text-green-500 glow-ring-green rounded-full px-2"
-              : currentState
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-400"
+              : flashState
+                ? "text-amber-500 scale-125 glow-ring-amber rounded-full px-2"
+                : currentState
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-400"
           }`}
         >
           {currentState || "\u2014"}
         </span>
+        {readingChar && (
+          <span className="inline-flex items-center gap-1 text-xs font-mono bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-700 animate-fade-in">
+            <svg className="w-3 h-3 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            reading "{readingChar}"
+          </span>
+        )}
         {isAccepted && (
           <span className="text-xs bg-green-500 text-white px-2.5 py-0.5 rounded-full font-bold animate-pulse shadow-sm">
             ✓ ACCEPTED

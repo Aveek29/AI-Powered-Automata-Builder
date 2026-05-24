@@ -234,3 +234,24 @@
     transform: scale(1.05) rotate(3deg);
   }
 }
+
+@keyframes bounceShort {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.animate-bounce-short {
+  animation: bounceShort 0.4s ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
