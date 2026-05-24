@@ -316,11 +316,11 @@ export default function Simulator({ automata, onStateChange }) {
         />
       </div>
 
-      <div className="mb-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto py-2 px-1 min-h-[52px]">
+      <div className="mb-3 -mx-1">
+        <div className="flex items-center gap-1 overflow-x-auto py-2 px-1 min-h-[48px] snap-x snap-mandatory">
           {tapeChars.length > 0 ? (
             tapeChars.map((char, i) => {
-              let cellClass = "tape-cell";
+              let cellClass = "tape-cell shrink-0 snap-start";
               let extraAnim = "";
 
               if (finished && failIndex >= 0 && i === failIndex) {
@@ -345,7 +345,6 @@ export default function Simulator({ automata, onStateChange }) {
                 <div
                   key={i}
                   className={`${cellClass}${extraAnim}`}
-                  style={{ minWidth: "2.25rem" }}
                 >
                   {char}
                 </div>

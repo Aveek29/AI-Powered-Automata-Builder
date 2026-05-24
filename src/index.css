@@ -137,7 +137,7 @@
   }
 
   .tape-cell {
-    @apply w-9 h-10 flex items-center justify-center font-mono font-bold text-sm rounded-md border bg-white dark:bg-gray-800 transition-all duration-200 select-none;
+    @apply w-8 md:w-9 h-9 md:h-10 flex items-center justify-center font-mono font-bold text-xs md:text-sm rounded-md border bg-white dark:bg-gray-800 transition-all duration-200 select-none;
     border-color: var(--theme-primary-030);
   }
 

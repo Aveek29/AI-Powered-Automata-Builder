@@ -12,7 +12,7 @@ export default function ChatPage() {
           programming.
         </p>
       </div>
-      <div className="h-[calc(100vh-12rem)] min-h-[500px]">
+      <div className="h-[calc(100vh-14rem)] md:h-[calc(100vh-12rem)] min-h-[400px] md:min-h-[500px]">
         <ChatBox />
       </div>
     </div>

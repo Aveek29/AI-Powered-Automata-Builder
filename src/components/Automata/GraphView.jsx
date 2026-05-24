@@ -58,19 +58,17 @@ function StateNode({ data, selected }) {
   return (
     <div className="relative">
       {data.isStart && (
-        <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex items-center">
-          <div className="flex items-center gap-0">
-            <span className="text-[11px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest mr-1">Start</span>
-            <svg width="28" height="16" viewBox="0 0 28 16" className="drop-shadow-sm">
-              <line x1="0" y1="8" x2="18" y2="8" stroke="#3b82f6" strokeWidth="2.5" />
-              <polygon points="18,1 28,8 18,15" fill="#3b82f6" />
-            </svg>
-          </div>
+        <div className="absolute -left-16 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+          <svg width="52" height="18" viewBox="0 0 52 18" className="drop-shadow-sm">
+            <text x="0" y="13" fontSize="11" fontWeight="800" fill="#3b82f6" fontFamily="'Plus Jakarta Sans', 'Inter', sans-serif" letterSpacing="1">START</text>
+            <line x1="42" y1="9" x2="48" y2="9" stroke="#3b82f6" strokeWidth="2.5" />
+            <polygon points="48,3 52,9 48,15" fill="#3b82f6" />
+          </svg>
         </div>
       )}
 
       <div
-        className={`relative w-[72px] h-[72px] rounded-full flex items-center justify-center font-bold text-base bg-gradient-to-br border-2 transition-all duration-300 ease-out cursor-pointer select-none ${s.bg} ${s.border} ${s.shadow} ${
+        className={`relative w-[68px] h-[68px] rounded-full flex items-center justify-center font-bold text-base bg-gradient-to-br border-2 transition-all duration-300 ease-out cursor-pointer select-none ${s.bg} ${s.border} ${s.shadow} ${
           isCurrent ? "scale-110" : selected ? "scale-105" : "hover:scale-105 hover:shadow-xl"
         }`}
         style={{ borderWidth: isCurrent ? 3 : isAccepting ? 3 : 2 }}
@@ -87,21 +85,13 @@ function StateNode({ data, selected }) {
         {isCurrent && (
           <div className="absolute -inset-1.5 rounded-full border-2 border-amber-400/40 dark:border-amber-500/30 animate-pulse" />
         )}
-        <span className="relative z-10 font-mono text-[15px] font-bold text-gray-800 dark:text-gray-100">
+        <span className="relative z-10 font-mono text-[14px] font-bold text-gray-800 dark:text-gray-100">
           {data.label}
         </span>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!w-0 !h-0 !border-0 !bg-transparent"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!w-0 !h-0 !border-0 !bg-transparent"
-      />
+      <Handle type="source" position={Position.Right} className="!w-0 !h-0 !border-0 !bg-transparent" />
+      <Handle type="target" position={Position.Left} className="!w-0 !h-0 !border-0 !bg-transparent" />
     </div>
   );
 }
@@ -110,6 +100,30 @@ const nodeTypes = { stateNode: StateNode };
 
 function buildEdgeKey(a, b) {
   return a < b ? `${a}|||${b}` : `${b}|||${a}`;
+}
+
+function layoutStates(states) {
+  const n = states.length;
+  if (n <= 4) {
+    const radius = 180;
+    const cx = 200;
+    const cy = 180;
+    return states.map((s, i) => {
+      const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      return {
+        x: cx + radius * Math.cos(angle),
+        y: cy + radius * Math.sin(angle),
+      };
+    });
+  }
+
+  const cols = Math.ceil(Math.sqrt(n));
+  const spacingX = 260;
+  const spacingY = 200;
+  return states.map((_, i) => ({
+    x: (i % cols) * spacingX + 80,
+    y: Math.floor(i / cols) * spacingY + 80,
+  }));
 }
 
 export default function GraphView({ automata, currentState, onStateClick }) {
@@ -121,9 +135,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
     const startState = automata.start || (states.length > 0 ? states[0] : "");
     const accepting = automata.accepting || (states.length > 0 ? [states[states.length - 1]] : []);
 
-    const cols = Math.ceil(Math.sqrt(states.length));
-    const spacingX = 230;
-    const spacingY = 170;
+    const positions = layoutStates(states);
 
     const nodes = states.map((s, i) => ({
       id: s,
@@ -134,10 +146,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
         isAccepting: accepting.includes(s),
         isCurrent: s === currentState,
       },
-      position: {
-        x: (i % cols) * spacingX + 80,
-        y: Math.floor(i / cols) * spacingY + 80,
-      },
+      position: positions[i],
     }));
 
     const root = document.documentElement;
@@ -169,54 +178,55 @@ export default function GraphView({ automata, currentState, onStateClick }) {
       const pairKey = buildEdgeKey(val.from, val.to);
       const hasReverse = reversePairs.has(pairKey) && !isSelfLoop;
 
+      const label = sortedInputs.join(",");
+
       const edge = {
         id: `e-${val.from}-${val.to}-${sortedInputs.join("-")}`,
         source: val.from,
         target: val.to,
-        label: sortedInputs.join(", "),
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 24,
-          height: 24,
-          color: themeColor,
-        },
+        label,
         style: {
           stroke: themeColor,
-          strokeWidth: isSelfLoop ? 1.8 : 2.5,
-          opacity: isSelfLoop ? 0.7 : 0.9,
+          strokeWidth: 2.5,
         },
         labelStyle: {
           fontWeight: 800,
-          fontSize: 13,
+          fontSize: 12,
           fill: "#ffffff",
           fontFamily: "'Plus Jakarta Sans', 'Inter', monospace",
         },
         labelBgStyle: {
           fill: themeColor,
           fillOpacity: 1,
-          rx: 8,
-          ry: 8,
+          rx: 6,
+          ry: 6,
         },
-        labelBgPadding: [10, 5],
-        labelBgBorderRadius: 8,
+        labelBgPadding: [8, 4],
+        labelBgBorderRadius: 6,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 22,
+          height: 22,
+          color: themeColor,
+        },
       };
 
       if (isSelfLoop) {
         edge.type = "smoothstep";
         edge.style.strokeWidth = 2;
         edge.style.opacity = 0.7;
-        edge.markerEnd = {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: themeColor,
-        };
+        edge.markerEnd.width = 18;
+        edge.markerEnd.height = 18;
+        edge.labelStyle.fontSize = 11;
+        edge.labelBgPadding = [6, 3];
       } else if (hasReverse) {
         edge.type = "smoothstep";
         edge.sourcePosition = Position.Right;
         edge.targetPosition = Position.Left;
       } else {
         edge.type = "smoothstep";
+        edge.sourcePosition = Position.Right;
+        edge.targetPosition = Position.Left;
       }
 
       return edge;
@@ -224,6 +234,12 @@ export default function GraphView({ automata, currentState, onStateClick }) {
 
     return { nodes, edges };
   }, [automata, currentState]);
+
+  const graphHeight = useMemo(() => {
+    const count = (automata?.states?.length || 0);
+    if (count <= 3) return "h-[300px] md:h-[350px] lg:h-[400px]";
+    return "h-[350px] md:h-[450px] lg:h-[500px]";
+  }, [automata]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -242,7 +258,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
 
   if (!automata) {
     return (
-      <div className="flex items-center justify-center h-[450px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 text-gray-400 dark:text-gray-500 transition-colors duration-200">
+      <div className="flex items-center justify-center h-[250px] md:h-[350px] lg:h-[400px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 text-gray-400 dark:text-gray-500 transition-colors duration-200">
         <div className="text-center">
           <svg className="w-14 h-14 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
@@ -255,7 +271,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
   }
 
   return (
-    <div className="border border-gray-200/80 dark:border-gray-700/50 rounded-xl overflow-hidden transition-colors duration-200 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-900/30 dark:to-gray-800/20" style={{ height: 450 }}>
+    <div className={"border border-gray-200/80 dark:border-gray-700/50 rounded-xl overflow-hidden transition-colors duration-200 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-900/30 dark:to-gray-800/20 " + graphHeight}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -264,7 +280,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.3 }}
+        fitViewOptions={{ padding: 0.35 }}
         attributionPosition="bottom-left"
         minZoom={0.35}
         maxZoom={3}
@@ -274,8 +290,8 @@ export default function GraphView({ automata, currentState, onStateClick }) {
         }}
       >
         <Background
-          gap={24}
-          size={1.2}
+          gap={20}
+          size={1}
           color="var(--bg-grid-color, #d1d5db)"
           style={{ backgroundColor: "transparent" }}
         />
