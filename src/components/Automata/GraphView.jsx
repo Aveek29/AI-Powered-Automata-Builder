@@ -14,27 +14,22 @@ const STATE_COLORS = {
   default: {
     bg: "from-white to-gray-50 dark:from-gray-700 dark:to-gray-650",
     border: "border-gray-400 dark:border-gray-500",
-    shadow: "shadow-md shadow-gray-200/50 dark:shadow-gray-900/30",
   },
   current: {
     bg: "from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-yellow-900/30",
     border: "border-amber-400 dark:border-amber-500",
-    shadow: "shadow-lg shadow-amber-400/30 dark:shadow-amber-500/25",
   },
   selected: {
     bg: "from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/30",
     border: "border-blue-500 dark:border-blue-400",
-    shadow: "shadow-lg shadow-blue-400/25 dark:shadow-blue-500/20",
   },
   accepting: {
     bg: "from-emerald-50 to-green-50 dark:from-emerald-900/40 dark:to-green-900/30",
     border: "border-emerald-500 dark:border-emerald-400",
-    shadow: "shadow-md shadow-emerald-200/50 dark:shadow-emerald-900/30",
   },
   acceptingCurrent: {
     bg: "from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-yellow-900/30",
     border: "border-amber-400 dark:border-amber-500",
-    shadow: "shadow-lg shadow-amber-400/30 dark:shadow-amber-500/25",
   },
 };
 
@@ -55,60 +50,115 @@ function StateNode({ data, selected }) {
 
   const s = getStyle(styleKey);
 
+  const handleClass = "!w-0 !h-0 !border-0 !bg-transparent !pointer-events-auto";
+  const hiddenClass = "!w-1.5 !h-1.5 !border-0 !bg-transparent";
+
   return (
     <div className="relative">
       {data.isStart && (
-        <div className="absolute -left-16 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-          <svg width="52" height="18" viewBox="0 0 52 18" className="drop-shadow-sm">
-            <text x="0" y="13" fontSize="11" fontWeight="800" fill="#3b82f6" fontFamily="'Plus Jakarta Sans', 'Inter', sans-serif" letterSpacing="1">START</text>
-            <line x1="42" y1="9" x2="48" y2="9" stroke="#3b82f6" strokeWidth="2.5" />
-            <polygon points="48,3 52,9 48,15" fill="#3b82f6" />
+        <div className="absolute -left-[72px] top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+          <svg width="140" height="24" viewBox="0 0 140 24" className="drop-shadow-sm">
+            <defs>
+              <marker id="startArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+              </marker>
+            </defs>
+            <text x="0" y="16" fontSize="13" fontWeight="800" fill="#3b82f6" fontFamily="'Plus Jakarta Sans', 'Inter', sans-serif" letterSpacing="1.5">START</text>
+            <line x1="64" y1="12" x2="118" y2="12" stroke="#3b82f6" strokeWidth="2.5" />
+            <line x1="118" y1="12" x2="128" y2="12" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#startArrow)" />
           </svg>
         </div>
       )}
 
       <div
-        className={`relative w-[68px] h-[68px] rounded-full flex items-center justify-center font-bold text-base bg-gradient-to-br border-2 transition-all duration-300 ease-out cursor-pointer select-none ${s.bg} ${s.border} ${s.shadow} ${
-          isCurrent ? "scale-110" : selected ? "scale-105" : "hover:scale-105 hover:shadow-xl"
+        className={`relative w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full flex items-center justify-center font-bold bg-gradient-to-br border-2 transition-all duration-300 ease-out cursor-pointer select-none ${s.bg} ${s.border} shadow-md ${
+          isCurrent ? "scale-110 shadow-lg shadow-amber-400/30 dark:shadow-amber-500/25" : selected ? "scale-105 shadow-md shadow-blue-400/25 dark:shadow-blue-500/20" : "hover:scale-105 hover:shadow-lg"
         }`}
-        style={{ borderWidth: isCurrent ? 3 : isAccepting ? 3 : 2 }}
+        style={{ borderWidth: isCurrent || isAccepting ? 3 : 2 }}
       >
         {isAccepting && (
           <div
             className={`absolute rounded-full border-[3px] ${
               isCurrent
-                ? "border-amber-400/70 dark:border-amber-500/70 inset-[5px]"
-                : "border-emerald-500/70 dark:border-emerald-400/70 inset-[5px]"
+                ? "border-amber-400/70 dark:border-amber-500/70 inset-[4px]"
+                : "border-emerald-500/70 dark:border-emerald-400/70 inset-[4px]"
             }`}
           />
         )}
         {isCurrent && (
           <div className="absolute -inset-1.5 rounded-full border-2 border-amber-400/40 dark:border-amber-500/30 animate-pulse" />
         )}
-        <span className="relative z-10 font-mono text-[14px] font-bold text-gray-800 dark:text-gray-100">
+        <span className="relative z-10 font-mono text-[13px] sm:text-[15px] font-bold text-gray-800 dark:text-gray-100 leading-none">
           {data.label}
         </span>
       </div>
 
-      <Handle type="source" position={Position.Right} className="!w-0 !h-0 !border-0 !bg-transparent" />
-      <Handle type="target" position={Position.Left} className="!w-0 !h-0 !border-0 !bg-transparent" />
+      <Handle type="target" id="r" position={Position.Right} className={handleClass} />
+      <Handle type="target" id="l" position={Position.Left} className={handleClass} />
+      <Handle type="target" id="t" position={Position.Top} className={handleClass} />
+      <Handle type="target" id="b" position={Position.Bottom} className={handleClass} />
+
+      <Handle type="source" id="r" position={Position.Right} className={hiddenClass} />
+      <Handle type="source" id="l" position={Position.Left} className={hiddenClass} />
+      <Handle type="source" id="t" position={Position.Top} className={hiddenClass} />
+      <Handle type="source" id="b" position={Position.Bottom} className={hiddenClass} />
     </div>
   );
 }
 
 const nodeTypes = { stateNode: StateNode };
 
-function buildEdgeKey(a, b) {
-  return a < b ? `${a}|||${b}` : `${b}|||${a}`;
+function getBestHandlePair(sourcePos, targetPos) {
+  const dx = targetPos.x - sourcePos.x;
+  const dy = targetPos.y - sourcePos.y;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+
+  if (absDx >= absDy) {
+    if (dx >= 0) return { sourceHandle: "r", targetHandle: "l" };
+    return { sourceHandle: "l", targetHandle: "r" };
+  }
+  if (dy >= 0) return { sourceHandle: "b", targetHandle: "t" };
+  return { sourceHandle: "t", targetHandle: "b" };
+}
+
+function getBidiHandlePair(sourcePos, targetPos) {
+  const dx = targetPos.x - sourcePos.x;
+  const dy = targetPos.y - sourcePos.y;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+
+  if (absDx >= absDy) {
+    if (dx >= 0) {
+      return {
+        forward: { sourceHandle: "r", targetHandle: "l" },
+        reverse: { sourceHandle: "b", targetHandle: "t" },
+      };
+    }
+    return {
+      forward: { sourceHandle: "l", targetHandle: "r" },
+      reverse: { sourceHandle: "t", targetHandle: "b" },
+    };
+  }
+  if (dy >= 0) {
+    return {
+      forward: { sourceHandle: "b", targetHandle: "t" },
+      reverse: { sourceHandle: "r", targetHandle: "l" },
+    };
+  }
+  return {
+    forward: { sourceHandle: "t", targetHandle: "b" },
+    reverse: { sourceHandle: "l", targetHandle: "r" },
+  };
 }
 
 function layoutStates(states) {
   const n = states.length;
   if (n <= 4) {
-    const radius = 180;
-    const cx = 200;
-    const cy = 180;
-    return states.map((s, i) => {
+    const radius = 100;
+    const cx = 130;
+    const cy = 110;
+    return states.map((_, i) => {
       const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
       return {
         x: cx + radius * Math.cos(angle),
@@ -116,17 +166,23 @@ function layoutStates(states) {
       };
     });
   }
-
   const cols = Math.ceil(Math.sqrt(n));
-  const spacingX = 260;
-  const spacingY = 200;
+  const spacingX = 130;
+  const spacingY = 100;
   return states.map((_, i) => ({
-    x: (i % cols) * spacingX + 80,
-    y: Math.floor(i / cols) * spacingY + 80,
+    x: (i % cols) * spacingX + 60,
+    y: Math.floor(i / cols) * spacingY + 60,
   }));
 }
 
 export default function GraphView({ automata, currentState, onStateClick }) {
+  const graphHeight = useMemo(() => {
+    const count = automata?.states?.length || 0;
+    if (count <= 3) return "h-[260px] sm:h-[320px] lg:h-[380px]";
+    if (count <= 5) return "h-[300px] sm:h-[380px] lg:h-[450px]";
+    return "h-[350px] sm:h-[450px] lg:h-[520px]";
+  }, [automata]);
+
   const { nodes: freshNodes, edges: freshEdges } = useMemo(() => {
     if (!automata) return { nodes: [], edges: [] };
 
@@ -137,17 +193,21 @@ export default function GraphView({ automata, currentState, onStateClick }) {
 
     const positions = layoutStates(states);
 
-    const nodes = states.map((s, i) => ({
-      id: s,
-      type: "stateNode",
-      data: {
-        label: s,
-        isStart: s === startState,
-        isAccepting: accepting.includes(s),
-        isCurrent: s === currentState,
-      },
-      position: positions[i],
-    }));
+    const posMap = {};
+    const nodes = states.map((s, i) => {
+      posMap[s] = positions[i];
+      return {
+        id: s,
+        type: "stateNode",
+        data: {
+          label: s,
+          isStart: s === startState,
+          isAccepting: accepting.includes(s),
+          isCurrent: s === currentState,
+        },
+        position: positions[i],
+      };
+    });
 
     const root = document.documentElement;
     const themeColor = getComputedStyle(root).getPropertyValue("--theme-primary").trim() || "#3b82f6";
@@ -163,19 +223,19 @@ export default function GraphView({ automata, currentState, onStateClick }) {
     });
 
     const reversePairs = new Set();
-    const keys = Array.from(edgeMap.keys());
-    for (const k of keys) {
+    const edgeEntries = Array.from(edgeMap.entries());
+    for (const [k] of edgeEntries) {
       const [a, b] = k.split("->");
-      const rk = `${b}->${a}`;
-      if (keys.includes(rk) && a !== b) {
-        reversePairs.add(buildEdgeKey(a, b));
+      if (edgeMap.has(`${b}->${a}`) && a !== b) {
+        const key = a < b ? `${a}|||${b}` : `${b}|||${a}`;
+        reversePairs.add(key);
       }
     }
 
     const edges = Array.from(edgeMap.values()).map((val) => {
       const isSelfLoop = val.from === val.to;
       const sortedInputs = Array.from(val.inputs).sort();
-      const pairKey = buildEdgeKey(val.from, val.to);
+      const pairKey = val.from < val.to ? `${val.from}|||${val.to}` : `${val.to}|||${val.from}`;
       const hasReverse = reversePairs.has(pairKey) && !isSelfLoop;
 
       const label = sortedInputs.join(",");
@@ -191,42 +251,61 @@ export default function GraphView({ automata, currentState, onStateClick }) {
         },
         labelStyle: {
           fontWeight: 800,
-          fontSize: 12,
+          fontSize: isSelfLoop ? 10 : 11,
           fill: "#ffffff",
           fontFamily: "'Plus Jakarta Sans', 'Inter', monospace",
         },
         labelBgStyle: {
           fill: themeColor,
           fillOpacity: 1,
-          rx: 6,
-          ry: 6,
+          rx: 5,
+          ry: 5,
         },
-        labelBgPadding: [8, 4],
-        labelBgBorderRadius: 6,
+        labelBgPadding: [7, 3],
+        labelBgBorderRadius: 5,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 22,
-          height: 22,
+          width: 20,
+          height: 20,
           color: themeColor,
         },
       };
 
       if (isSelfLoop) {
         edge.type = "smoothstep";
-        edge.style.strokeWidth = 2;
+        edge.sourceHandle = "r";
+        edge.targetHandle = "r";
+        edge.style.strokeWidth = 1.8;
         edge.style.opacity = 0.7;
-        edge.markerEnd.width = 18;
-        edge.markerEnd.height = 18;
-        edge.labelStyle.fontSize = 11;
-        edge.labelBgPadding = [6, 3];
-      } else if (hasReverse) {
+        edge.markerEnd.width = 16;
+        edge.markerEnd.height = 16;
+        return edge;
+      }
+
+      const srcPos = posMap[val.from];
+      const tgtPos = posMap[val.to];
+      if (!srcPos || !tgtPos) {
         edge.type = "smoothstep";
-        edge.sourcePosition = Position.Right;
-        edge.targetPosition = Position.Left;
+        edge.sourceHandle = "r";
+        edge.targetHandle = "l";
+        return edge;
+      }
+
+      const srcCenter = { x: srcPos.x + 30, y: srcPos.y + 30 };
+      const tgtCenter = { x: tgtPos.x + 30, y: tgtPos.y + 30 };
+
+      if (hasReverse) {
+        const { forward, reverse } = getBidiHandlePair(srcCenter, tgtCenter);
+        const isForward = `${val.from}->${val.to}` < `${val.to}->${val.from}`;
+        const handles = isForward ? forward : reverse;
+        edge.type = "smoothstep";
+        edge.sourceHandle = handles.sourceHandle;
+        edge.targetHandle = handles.targetHandle;
       } else {
+        const handles = getBestHandlePair(srcCenter, tgtCenter);
         edge.type = "smoothstep";
-        edge.sourcePosition = Position.Right;
-        edge.targetPosition = Position.Left;
+        edge.sourceHandle = handles.sourceHandle;
+        edge.targetHandle = handles.targetHandle;
       }
 
       return edge;
@@ -234,12 +313,6 @@ export default function GraphView({ automata, currentState, onStateClick }) {
 
     return { nodes, edges };
   }, [automata, currentState]);
-
-  const graphHeight = useMemo(() => {
-    const count = (automata?.states?.length || 0);
-    if (count <= 3) return "h-[300px] md:h-[350px] lg:h-[400px]";
-    return "h-[350px] md:h-[450px] lg:h-[500px]";
-  }, [automata]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -258,13 +331,13 @@ export default function GraphView({ automata, currentState, onStateClick }) {
 
   if (!automata) {
     return (
-      <div className="flex items-center justify-center h-[250px] md:h-[350px] lg:h-[400px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 text-gray-400 dark:text-gray-500 transition-colors duration-200">
-        <div className="text-center">
-          <svg className="w-14 h-14 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex items-center justify-center h-[200px] sm:h-[280px] lg:h-[350px] border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 text-gray-400 dark:text-gray-500 transition-colors duration-200">
+        <div className="text-center px-4">
+          <svg className="w-10 h-10 sm:w-14 sm:h-14 mx-auto mb-2 sm:mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
           </svg>
-          <p className="text-sm font-medium">Convert some text to see the automata graph</p>
-          <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Enter a description and click Convert</p>
+          <p className="text-xs sm:text-sm font-medium">Convert some text to see the automata graph</p>
+          <p className="text-[11px] sm:text-xs text-gray-300 dark:text-gray-600 mt-1">Enter a description and click Convert</p>
         </div>
       </div>
     );
@@ -280,25 +353,17 @@ export default function GraphView({ automata, currentState, onStateClick }) {
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.35 }}
+        fitViewOptions={{ padding: 0.4 }}
         attributionPosition="bottom-left"
-        minZoom={0.35}
-        maxZoom={3}
+        minZoom={0.3}
+        maxZoom={4}
         defaultEdgeOptions={{
           type: "smoothstep",
           style: { strokeWidth: 2.5 },
         }}
       >
-        <Background
-          gap={20}
-          size={1}
-          color="var(--bg-grid-color, #d1d5db)"
-          style={{ backgroundColor: "transparent" }}
-        />
-        <Controls
-          showInteractive={false}
-          className="!bg-white/85 dark:!bg-gray-800/85 !backdrop-blur-sm !border !border-gray-200/50 dark:!border-gray-700/50 !rounded-lg !shadow-sm"
-        />
+        <Background gap={16} size={0.8} color="var(--bg-grid-color, #d1d5db)" style={{ backgroundColor: "transparent" }} />
+        <Controls showInteractive={false} className="!bg-white/85 dark:!bg-gray-800/85 !backdrop-blur-sm !border !border-gray-200/50 dark:!border-gray-700/50 !rounded-lg !shadow-sm" />
       </ReactFlow>
     </div>
   );
