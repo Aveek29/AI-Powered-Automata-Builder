@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -40,6 +40,7 @@ function getStyle(style) {
 function StateNode({ data, selected }) {
   const isCurrent = data.isCurrent;
   const isAccepting = data.isAccepting;
+  const tick = data.transitionTick || 0;
 
   let styleKey;
   if (isCurrent && isAccepting) styleKey = "acceptingCurrent";
@@ -71,10 +72,13 @@ function StateNode({ data, selected }) {
       )}
 
       <div
-        className={`relative w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full flex items-center justify-center font-bold bg-gradient-to-br border-2 transition-all duration-300 ease-out cursor-pointer select-none ${s.bg} ${s.border} shadow-md ${
+        className={`relative w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full flex items-center justify-center font-bold bg-gradient-to-br border-2 shadow-md cursor-pointer select-none ${s.bg} ${s.border} ${
           isCurrent ? "scale-110 shadow-lg shadow-amber-400/30 dark:shadow-amber-500/25" : selected ? "scale-105 shadow-md shadow-blue-400/25 dark:shadow-blue-500/20" : "hover:scale-105 hover:shadow-lg"
         }`}
-        style={{ borderWidth: isCurrent || isAccepting ? 3 : 2 }}
+        style={{
+          borderWidth: isCurrent || isAccepting ? 3 : 2,
+          transition: isCurrent ? "all 0.2s ease-out" : "all 0.3s ease-out",
+        }}
       >
         {isAccepting && (
           <div
@@ -85,9 +89,18 @@ function StateNode({ data, selected }) {
             }`}
           />
         )}
+
+        {isCurrent && (
+          <div
+            key={`flash-${tick}`}
+            className="absolute -inset-2 rounded-full border-[3px] border-amber-400/60 dark:border-amber-300/50 animate-node-flash"
+          />
+        )}
+
         {isCurrent && (
           <div className="absolute -inset-1.5 rounded-full border-2 border-amber-400/40 dark:border-amber-500/30 animate-pulse" />
         )}
+
         <span className="relative z-10 font-mono text-[13px] sm:text-[15px] font-bold text-gray-800 dark:text-gray-100 leading-none">
           {data.label}
         </span>
@@ -183,6 +196,15 @@ export default function GraphView({ automata, currentState, onStateClick }) {
     return "h-[350px] sm:h-[450px] lg:h-[520px]";
   }, [automata]);
 
+  const transitionTick = useRef(0);
+  const prevState = useRef(null);
+  useEffect(() => {
+    if (currentState && currentState !== prevState.current) {
+      transitionTick.current += 1;
+    }
+    prevState.current = currentState;
+  }, [currentState]);
+
   const { nodes: freshNodes, edges: freshEdges } = useMemo(() => {
     if (!automata) return { nodes: [], edges: [] };
 
@@ -204,6 +226,7 @@ export default function GraphView({ automata, currentState, onStateClick }) {
           isStart: s === startState,
           isAccepting: accepting.includes(s),
           isCurrent: s === currentState,
+          transitionTick: transitionTick.current,
         },
         position: positions[i],
       };

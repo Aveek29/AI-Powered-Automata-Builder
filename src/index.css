@@ -255,3 +255,13 @@
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
+
+@keyframes nodeFlash {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.animate-node-flash {
+  animation: nodeFlash 0.6s ease-out forwards;
+}
